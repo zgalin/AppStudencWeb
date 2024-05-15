@@ -1,0 +1,51 @@
+@model AppStudencWeb.Models.ShoppingCart
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Shopping Cart - AppStudenc</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Shopping Cart</h1>
+
+        <h2 class="mt-3">Items</h2>
+        <ul class="list-group">
+            @foreach (var item in Model.Items)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    @item.Name
+                    <span class="badge badge-primary badge-pill">@item.Price €</span>
+                </li>
+            }
+        </ul>
+        <p class="mt-3"><strong>Total Price:</strong> @Model.TotalPrice €</p>
+
+        @if (!Model.StudentDiscountApplied && Model.StudentCouponsLeft > 0)
+        {
+            <form action="/Home/ApplyStudentDiscount" method="post">
+                <button type="submit" class="btn btn-warning">Apply Student Discount</button>
+            </form>
+        }
+
+        <h2 class="mt-4">Delivery Information</h2>
+        <form action="/Home/SubmitOrder" method="post">
+            <div class="form-group">
+                <label for="deliveryAddress">Delivery Address</label>
+                <input type="text" class="form-control" id="deliveryAddress" name="deliveryAddress" required />
+            </div>
+            <div class="form-group">
+                <label for="paymentMethod">Payment Method</label>
+                <select class="form-control" id="paymentMethod" name="paymentMethod" required>
+                    <option>Credit Card</option>
+                    <option>PayPal</option>
+                    <option>Cash on Delivery</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Order</button>
+        </form>
+    </div>
+</body>
+</html>
