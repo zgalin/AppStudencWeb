@@ -4,18 +4,19 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Home - AppStudenc</title>
+    <title>Restaurants - AppStudenc</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 </head>
 <body>
     <div class="container">
         <h1 class="mt-5">Available Restaurants</h1>
-        <p>Student Coupons Left: @Model.StudentCouponsLeft</p>
         <ul class="list-group">
             @foreach (var restaurant in Model.Restaurants)
             {
                 <li class="list-group-item">
                     <a href="/Home/Details/@restaurant.Id">@restaurant.Name</a>
+                    <p>@restaurant.Description</p>
+                    <p><strong>Average Rating:</strong> @restaurant.AverageRating.ToString("0.0")</p>
                 </li>
             }
         </ul>

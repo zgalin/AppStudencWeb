@@ -69,7 +69,20 @@ namespace AppStudencWeb.Controllers
 
             return View(viewModel);
         }
-
+        public IActionResult AddReview(int RestaurantId, int Rating, string Comment)
+        {
+            var restaurant = _restaurants.FirstOrDefault(r => r.Id == RestaurantId);
+            if (restaurant != null)
+            {
+                restaurant.Reviews.Add(new Review
+                {
+                    RestaurantId = RestaurantId,
+                    Rating = Rating,
+                    Comment = Comment
+                });
+            }
+            return RedirectToAction("Details", new { id = RestaurantId });
+        }
         public IActionResult Details(int id)
         {
             var restaurant = _restaurants.FirstOrDefault(r => r.Id == id);
