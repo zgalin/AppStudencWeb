@@ -101,12 +101,21 @@ namespace AppStudencWeb.Controllers
         {
             var viewModel = new ShoppingCartViewModel
             {
-                Items = _shoppingCart.Items,
+                Items = _shoppingCart.Items.ToList(),
                 TotalPrice = _shoppingCart.TotalPrice,
                 StudentDiscountApplied = _shoppingCart.StudentDiscountApplied,
-                StudentCouponsLeft = _shoppingCart.StudentCouponsLeft
+                StudentCouponsLeft = _shoppingCart.StudentCouponsLeft,
+                EstimatedDeliveryTime = GetEstimatedDeliveryTime() // Simulated estimated delivery time
             };
+
             return View(viewModel);
+        }
+
+        private string GetEstimatedDeliveryTime()
+        {
+            // Simulate an estimated delivery time
+            var estimatedTime = DateTime.Now.AddMinutes(new Random().Next(30, 60));
+            return estimatedTime.ToString("hh:mm tt");
         }
 
         [HttpPost]
