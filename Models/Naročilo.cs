@@ -4,17 +4,8 @@ namespace AppStudencWeb.Models
 {
     public class Naročilo
     {
+        public int Id { get; set; }  // Add this property
         public string StanjeNarocila { get; set; }
         public DateTime CasNarocila { get; set; }
-
-        public string VrniStanjeNarocila()
-        {
-            return StanjeNarocila;
-        }
-
-        public TimeSpan VrniPreostaliCas()
-        {
-            return DateTime.Now - CasNarocila;
-        }
     }
 }

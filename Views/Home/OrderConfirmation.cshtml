@@ -1,3 +1,5 @@
+@model AppStudencWeb.Models.Naročilo
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -8,9 +10,11 @@
 <body>
     <div class="container">
         <h1 class="mt-5">Order Confirmation</h1>
-        <p>Your order has been successfully submitted. Thank you for your purchase!</p>
+        <p>Order ID: @Model.Id</p>
+        <p>Status: @Model.StanjeNarocila</p>
+        <p>Order Time: @Model.CasNarocila</p>
+
         <a href="/" class="btn btn-primary">Back to Home</a>
-        <a href="/Home/TrackOrder" class="btn btn-secondary">Track Order</a>
     </div>
 </body>
 </html>

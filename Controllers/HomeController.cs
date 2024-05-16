@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using AppStudencWeb.Models;
+using AppStudencWeb.Models.Simulation;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -51,13 +52,18 @@ namespace AppStudencWeb.Controllers
         };
 
         private static ShoppingCart _shoppingCart = new ShoppingCart();
+        private static DeliveryService_SIM _deliveryService = new DeliveryService_SIM();
+        private static PaymentService_SIM _paymentService = new PaymentService_SIM();
+        private static K_Naročilo_Hrane _boundary = new K_Naročilo_Hrane();
+        private static SV_Studetska_Prehrana _studentService = new SV_Studetska_Prehrana();
+        private static SVGostilna _restaurantService = new SVGostilna();
 
         public IActionResult Index()
         {
             var viewModel = new HomeViewModel
             {
                 Restaurants = _restaurants,
-                StudentCouponsLeft = _shoppingCart.StudentCouponsLeft
+                StudentCouponsLeft = _boundary.StudentCouponsLeft
             };
 
             return View(viewModel);
@@ -83,7 +89,7 @@ namespace AppStudencWeb.Controllers
                 var foodItem = restaurant.Menu.FirstOrDefault(f => f.Name == foodName);
                 if (foodItem != null)
                 {
-                    _shoppingCart.Items.Add(foodItem);
+                    _boundary.DodajArtikel(foodItem);
                 }
             }
 
@@ -92,51 +98,95 @@ namespace AppStudencWeb.Controllers
 
         public IActionResult ViewCart()
         {
-            return View(_shoppingCart);
+            var viewModel = new ShoppingCartViewModel
+            {
+                Items = _boundary.Items,
+                TotalPrice = _boundary.IzracunajCeno(),
+                StudentDiscountApplied = _boundary.StudentDiscountApplied,
+                StudentCouponsLeft = _boundary.StudentCouponsLeft
+            };
+            return View(viewModel);
         }
 
         [HttpPost]
         public IActionResult ApplyStudentDiscount()
         {
-            if (_shoppingCart.StudentCouponsLeft > 0 && !_shoppingCart.StudentDiscountApplied)
+            if (_studentService.ValidirajŠtudetskiStatus())
             {
-                _shoppingCart.StudentDiscountApplied = true;
-                _shoppingCart.StudentCouponsLeft--;
+                _studentService.PotrdiBon();
+                _boundary.ApplyStudentDiscount();
             }
 
             return RedirectToAction("ViewCart");
         }
 
         [HttpPost]
-        public IActionResult SubmitOrder(string deliveryAddress, string paymentMethod)
+        public IActionResult SubmitOrder(string deliveryAddress, string paymentMethod, double latitude, double longitude)
         {
             _shoppingCart.DeliveryAddress = deliveryAddress;
             _shoppingCart.PaymentMethod = paymentMethod;
+            _shoppingCart.Latitude = latitude;
+            _shoppingCart.Longitude = longitude;
 
-            // Here you would normally process the order (e.g., save to database, send email, etc.)
-            // For simplicity, we will just clear the cart.
+            // Simulate payment processing
+            if (!_paymentService.ProcessPayment(paymentMethod, _boundary.IzracunajCeno()))
+            {
+                return RedirectToAction("ViewCart", new { errorMessage = "Payment failed" });
+            }
 
-            _shoppingCart = new ShoppingCart();
+            // Create and submit the order
+            var order = new Naročilo
+            {
+                Id = new Random().Next(1, 1000), // Simulate order ID generation
+                StanjeNarocila = "Submitted",
+                CasNarocila = DateTime.Now
+            };
+            _restaurantService.SprejmiNaročilo(order);
 
-            return RedirectToAction("OrderConfirmation");
+            // Clear the shopping cart
+            _boundary.PocistiKosarico();
+
+            return RedirectToAction("OrderConfirmation", new { orderId = order.Id });
         }
 
-        public IActionResult OrderConfirmation()
+        public IActionResult OrderConfirmation(int orderId)
         {
-            return View();
+            var orderDetails = _restaurantService.VrniPodrobnostiNarocila(orderId);
+            return View(orderDetails);
         }
 
         public IActionResult TrackOrder()
         {
-            // This would normally track the real order, for now we just display a placeholder
-            var orderStatus = "Your order is being prepared and will be delivered soon.";
-            return View("TrackOrder", orderStatus);
+            // Simulate delivery status
+            var orderStatus = _deliveryService.GetDeliveryStatus();
+            var viewModel = new TrackOrderViewModel
+            {
+                OrderStatus = orderStatus,
+                Latitude = _shoppingCart.Latitude,
+                Longitude = _shoppingCart.Longitude
+            };
+            return View(viewModel);
         }
     }
 
     public class HomeViewModel
     {
-        public List<Restaurant> Restaurants { get; set; }
+        public List<Restaurant> Restaurants { get; set; } = new List<Restaurant>();  // Ensure it has a default value
         public int StudentCouponsLeft { get; set; }
+    }
+
+    public class ShoppingCartViewModel
+    {
+        public List<FoodItem> Items { get; set; } = new List<FoodItem>();  // Ensure it has a default value
+        public double TotalPrice { get; set; }
+        public bool StudentDiscountApplied { get; set; }
+        public int StudentCouponsLeft { get; set; }
+    }
+
+    public class TrackOrderViewModel
+    {
+        public string OrderStatus { get; set; } = string.Empty;  // Ensure it has a default value
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
     }
 }

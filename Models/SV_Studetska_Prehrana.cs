@@ -2,14 +2,15 @@ namespace AppStudencWeb.Models
 {
     public class SV_Studetska_Prehrana
     {
-        public void ValidirajŠtudetskiStatus()
+        public bool ValidirajŠtudetskiStatus()
         {
-            // Validate student status logic
+            // Simulate validation of student status
+            return true; // Assume student status is valid for simulation purposes
         }
 
         public void PotrdiBon()
         {
-            // Confirm student meal voucher
+            // Logic to confirm student meal voucher
         }
     }
 }

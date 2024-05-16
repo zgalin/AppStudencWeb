@@ -1,4 +1,4 @@
-@model string
+@model AppStudencWeb.Controllers.TrackOrderViewModel
 
 <!DOCTYPE html>
 <html>
@@ -15,7 +15,7 @@
 <body>
     <div class="container">
         <h1 class="mt-5">Track Order</h1>
-        <p>@Model</p>
+        <p>@Model.OrderStatus</p>
 
         <div id="map" class="mb-4"></div>
         <script>
@@ -26,12 +26,12 @@
             var restaurantMarker = L.marker([46.056946, 14.505751]).addTo(map)
                 .bindPopup('Gostilna pri Jožetu')
                 .openPopup();
-            var deliveryMarker = L.marker([46.05108, 14.50693]).addTo(map)
+            var deliveryMarker = L.marker([@Model.Latitude, @Model.Longitude]).addTo(map)
                 .bindPopup('Delivery to your location')
                 .openPopup();
             var route = L.polyline([
                 [46.056946, 14.505751],
-                [46.05108, 14.50693]
+                [@Model.Latitude, @Model.Longitude]
             ], {color: 'blue'}).addTo(map);
         </script>
 
