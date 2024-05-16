@@ -28,3 +28,4 @@
 /Users/zigazgalin/Desktop/FAX/RIS/SEM2/AppStudencWeb/obj/Debug/net8.0/AppStudencWeb.pdb
 /Users/zigazgalin/Desktop/FAX/RIS/SEM2/AppStudencWeb/obj/Debug/net8.0/AppStudencWeb.genruntimeconfig.cache
 /Users/zigazgalin/Desktop/FAX/RIS/SEM2/AppStudencWeb/obj/Debug/net8.0/ref/AppStudencWeb.dll
+/Users/zigazgalin/Desktop/FAX/RIS/SEM2/AppStudencWeb/obj/Debug/net8.0/AppStudencWeb.sourcelink.json
