@@ -1,11 +1,10 @@
-namespace AppStudencWeb.Models.Simulation
+namespace AppStudencWeb.Simulations
 {
     public class PaymentService_SIM
     {
         public bool ProcessPayment(string paymentMethod, double amount)
         {
             // Simulate payment processing
-            // Here we assume all payments succeed for simplicity
             return true;
         }
     }

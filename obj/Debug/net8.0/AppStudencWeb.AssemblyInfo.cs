@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AppStudencWeb")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+332ad2be043f776fa7ee81964d6d0a23b40be491")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+52d087c0f1aec2177fe43a555a08aa64d574b122")]
 [assembly: System.Reflection.AssemblyProductAttribute("AppStudencWeb")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AppStudencWeb")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using AppStudencWeb.Models;
-using AppStudencWeb.Models.Simulation;
+using AppStudencWeb.Simulations;
+using AppStudencWeb.ViewModels;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+
 
 namespace AppStudencWeb.Controllers
 {
@@ -54,16 +57,14 @@ namespace AppStudencWeb.Controllers
         private static ShoppingCart _shoppingCart = new ShoppingCart();
         private static DeliveryService_SIM _deliveryService = new DeliveryService_SIM();
         private static PaymentService_SIM _paymentService = new PaymentService_SIM();
-        private static K_Naročilo_Hrane _boundary = new K_Naročilo_Hrane();
-        private static SV_Studetska_Prehrana _studentService = new SV_Studetska_Prehrana();
-        private static SVGostilna _restaurantService = new SVGostilna();
+        private static OrderHistory _orderHistory = new OrderHistory();
 
         public IActionResult Index()
         {
             var viewModel = new HomeViewModel
             {
                 Restaurants = _restaurants,
-                StudentCouponsLeft = _boundary.StudentCouponsLeft
+                StudentCouponsLeft = _shoppingCart.StudentCouponsLeft
             };
 
             return View(viewModel);
@@ -89,7 +90,7 @@ namespace AppStudencWeb.Controllers
                 var foodItem = restaurant.Menu.FirstOrDefault(f => f.Name == foodName);
                 if (foodItem != null)
                 {
-                    _boundary.DodajArtikel(foodItem);
+                    _shoppingCart.Items.Add(foodItem);
                 }
             }
 
@@ -100,10 +101,10 @@ namespace AppStudencWeb.Controllers
         {
             var viewModel = new ShoppingCartViewModel
             {
-                Items = _boundary.Items,
-                TotalPrice = _boundary.IzracunajCeno(),
-                StudentDiscountApplied = _boundary.StudentDiscountApplied,
-                StudentCouponsLeft = _boundary.StudentCouponsLeft
+                Items = _shoppingCart.Items,
+                TotalPrice = _shoppingCart.TotalPrice,
+                StudentDiscountApplied = _shoppingCart.StudentDiscountApplied,
+                StudentCouponsLeft = _shoppingCart.StudentCouponsLeft
             };
             return View(viewModel);
         }
@@ -111,25 +112,24 @@ namespace AppStudencWeb.Controllers
         [HttpPost]
         public IActionResult ApplyStudentDiscount()
         {
-            if (_studentService.ValidirajŠtudetskiStatus())
+            if (_shoppingCart.StudentCouponsLeft > 0)
             {
-                _studentService.PotrdiBon();
-                _boundary.ApplyStudentDiscount();
+                _shoppingCart.StudentDiscountApplied = true;
+                _shoppingCart.StudentCouponsLeft--;
+                _shoppingCart.Items.ForEach(item => item.Price *= 0.8); // Apply 20% discount
             }
 
             return RedirectToAction("ViewCart");
         }
 
         [HttpPost]
-        public IActionResult SubmitOrder(string deliveryAddress, string paymentMethod, double latitude, double longitude)
+        public IActionResult SubmitOrder(string deliveryAddress, string paymentMethod)
         {
             _shoppingCart.DeliveryAddress = deliveryAddress;
             _shoppingCart.PaymentMethod = paymentMethod;
-            _shoppingCart.Latitude = latitude;
-            _shoppingCart.Longitude = longitude;
 
             // Simulate payment processing
-            if (!_paymentService.ProcessPayment(paymentMethod, _boundary.IzracunajCeno()))
+            if (!_paymentService.ProcessPayment(paymentMethod, _shoppingCart.TotalPrice))
             {
                 return RedirectToAction("ViewCart", new { errorMessage = "Payment failed" });
             }
@@ -138,21 +138,47 @@ namespace AppStudencWeb.Controllers
             var order = new Naročilo
             {
                 Id = new Random().Next(1, 1000), // Simulate order ID generation
-                StanjeNarocila = "Submitted",
-                CasNarocila = DateTime.Now
+                StanjeNarocila = "Being prepared",
+                CasNarocila = DateTime.Now,
+                DeliveryAddress = deliveryAddress,
+                PaymentMethod = paymentMethod
             };
-            _restaurantService.SprejmiNaročilo(order);
+
+            _orderHistory.Orders.Add(order);
 
             // Clear the shopping cart
-            _boundary.PocistiKosarico();
+            _shoppingCart.Items.Clear();
+
+            // Simulate order process
+            SimulateOrderProcess(order);
 
             return RedirectToAction("OrderConfirmation", new { orderId = order.Id });
         }
 
+        private async void SimulateOrderProcess(Naročilo order)
+        {
+            // Simulate being prepared
+            await Task.Delay(5000); // Wait for 5 seconds
+            order.StanjeNarocila = "Out for delivery";
+
+            // Simulate delivery
+            await Task.Delay(5000); // Wait for another 5 seconds
+            order.StanjeNarocila = "Delivered";
+
+            // Simulate order completion
+            await Task.Delay(5000); // Wait for another 5 seconds
+            order.StanjeNarocila = "Completed";
+        }
+
         public IActionResult OrderConfirmation(int orderId)
         {
-            var orderDetails = _restaurantService.VrniPodrobnostiNarocila(orderId);
-            return View(orderDetails);
+            var order = _orderHistory.Orders.FirstOrDefault(o => o.Id == orderId);
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            return View(order);
         }
 
         public IActionResult TrackOrder()
@@ -167,26 +193,10 @@ namespace AppStudencWeb.Controllers
             };
             return View(viewModel);
         }
-    }
 
-    public class HomeViewModel
-    {
-        public List<Restaurant> Restaurants { get; set; } = new List<Restaurant>();  // Ensure it has a default value
-        public int StudentCouponsLeft { get; set; }
-    }
-
-    public class ShoppingCartViewModel
-    {
-        public List<FoodItem> Items { get; set; } = new List<FoodItem>();  // Ensure it has a default value
-        public double TotalPrice { get; set; }
-        public bool StudentDiscountApplied { get; set; }
-        public int StudentCouponsLeft { get; set; }
-    }
-
-    public class TrackOrderViewModel
-    {
-        public string OrderStatus { get; set; } = string.Empty;  // Ensure it has a default value
-        public double Latitude { get; set; }
-        public double Longitude { get; set; }
+        public IActionResult History()
+        {
+            return View(_orderHistory);
+        }
     }
 }

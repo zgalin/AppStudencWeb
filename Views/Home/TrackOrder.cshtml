@@ -1,41 +1,31 @@
-@model AppStudencWeb.Controllers.TrackOrderViewModel
+@model AppStudencWeb.ViewModels.TrackOrderViewModel
 
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Track Order - AppStudenc</title>
+    <title>Track Order</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <style>
-        #map { height: 400px; }
-    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
+    <script>
+        function initMap() {
+            var location = { lat: @Model.Latitude, lng: @Model.Longitude };
+            var map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 14,
+                center: location
+            });
+            var marker = new google.maps.Marker({
+                position: location,
+                map: map
+            });
+        }
+    </script>
 </head>
-<body>
+<body onload="initMap()">
     <div class="container">
         <h1 class="mt-5">Track Order</h1>
-        <p>@Model.OrderStatus</p>
-
-        <div id="map" class="mb-4"></div>
-        <script>
-            var map = L.map('map').setView([46.056946, 14.505751], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-            var restaurantMarker = L.marker([46.056946, 14.505751]).addTo(map)
-                .bindPopup('Gostilna pri Jožetu')
-                .openPopup();
-            var deliveryMarker = L.marker([@Model.Latitude, @Model.Longitude]).addTo(map)
-                .bindPopup('Delivery to your location')
-                .openPopup();
-            var route = L.polyline([
-                [46.056946, 14.505751],
-                [@Model.Latitude, @Model.Longitude]
-            ], {color: 'blue'}).addTo(map);
-        </script>
-
-        <a href="/" class="btn btn-primary">Back to Home</a>
+        <p>Status: @Model.OrderStatus</p>
+        <div id="map" style="height: 400px; width: 100%;"></div>
     </div>
 </body>
 </html>
